@@ -511,7 +511,7 @@ Time Spent Below Mean: {delta}
                                         
         pct_sum = round(pct_nodelay + pct_maxdelay + pct_minpower + pct_shift + pct_tou,2)
         if pct_sum != 1:
-            print(f'Percentages must equal 100% (currenty equals {pct_sum}%)')
+            print(f'Percentages must equal 100% (currenty equals {pct_sum * 100}%)')
             return
             
         self.stackplotter(pct_nodelay, pct_maxdelay, pct_minpower, pct_shift, pct_tou, dayofweek, num_evs)
