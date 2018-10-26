@@ -8,6 +8,8 @@ Created on Fri Oct 26 11:36:04 2018
 
 import ipywidgets as widgets
 import EVLoadModel
+import warnings
+warnings.filterwarnings("ignore")
 
 from IPython.core.display import display, HTML
 display(HTML("<style>.container { width:85% !important; }</style>"))
