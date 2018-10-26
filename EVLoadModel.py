@@ -483,6 +483,7 @@ Time Spent Below Mean: {delta}
         sns.set_style("white")
         figcontribution, axcontribution = plt.subplots(figsize = self.figsize, dpi = self.dpi)
         sns.despine()
+        self.dfscenario['load_contribution'] = self.dfscenario['load_contribution'] * 100
         self.dfscenario['load_contribution'].plot(ax = axcontribution, color = sns.color_palette()[0])
     
         if len(self.xintersections) == 0:
