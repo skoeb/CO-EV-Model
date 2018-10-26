@@ -13,7 +13,7 @@ warnings.filterwarnings("ignore")
 
 from IPython.core.display import display, HTML
 display(HTML("<style>.container { width:85% !important; }</style>"))
-display(HTML("<style>.output_wrapper, .output {height:auto !important; max-height:2500px;}.output_scroll {box-shadow:none !important; webkit-box-shadow:none !important;}</style>"))
+display(HTML("<style>.output_wrapper, .output {height:auto !important; max-height:5000px;}.output_scroll {box-shadow:none !important; webkit-box-shadow:none !important;}</style>"))
 
 style = {'description_width': 'initial'}
     

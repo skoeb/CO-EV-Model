@@ -359,7 +359,6 @@ class EVLoadModel(object):
         sns.despine()
         
         dfscenario.drop(['system_lambda','ev_load','total_load','load_contribution'], axis = 1).plot.area(ax = axstack)
-        #dfscenario['load_contribution'].plot(secondary_y = True, ax = ax, color = 'red')
         
         if len(self.xintersections) == 0:
             print('no mean intersection')
@@ -480,7 +479,25 @@ Time Spent Below Mean: {delta}
         axprogram.set_ylabel('Load (kW)')
         plt.xticks(np.arange(0,25,2))
 
-
+    def loadcontributionplotter(self):
+        sns.set_style("white")
+        figcontribution, axcontribution = plt.subplots(figsize = self.figsize, dpi = self.dpi)
+        sns.despine()
+        self.dfscenario['load_contribution'].plot(ax = axcontribution, color = sns.color_palette()[0])
+    
+        if len(self.xintersections) == 0:
+            print('no mean intersection')
+        elif len(self.xintersections) == 1:
+            axcontribution.axvline(x = self.xintersections[0], ls = '--', color = sns.color_palette()[8], label = 'λ Crosses Mean')
+        else:
+            axcontribution.axvline(x = self.xintersections[0], ls = '--', color = sns.color_palette()[8], label = 'λ Crosses Mean')
+            axcontribution.axvline(x = self.xintersections[-1], ls = '--', color = sns.color_palette()[8])
+        axcontribution.legend()
+        axcontribution.set_title('EV Contribution to System Load', fontsize = self.titlesize)
+        axcontribution.set_xlabel('Hour of The Day')
+        axcontribution.set_ylabel('Percent')
+        plt.xticks(np.arange(0,25,2))
+        
         
     def evloadonlyplotter(self):
         sns.set_style("white")
@@ -517,4 +534,5 @@ Time Spent Below Mean: {delta}
         self.stackplotter(pct_nodelay, pct_maxdelay, pct_minpower, pct_shift, pct_tou, dayofweek, num_evs)
         self.evloadonlyplotter()
         self.programloadplotter()
+        self.loadcontributionplotter()
         self.lambdaplotter()
