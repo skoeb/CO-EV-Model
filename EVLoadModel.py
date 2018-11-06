@@ -70,8 +70,8 @@ def intersection(x1,y1,x2,y2):
 
 
 class EVLoadModel(object):
-    def __init__(self, year):
-        self.figsize = (8,4)
+    def __init__(self, year, figsize = (8,4)):
+        self.figsize = figsize
         self.titlesize = 14
         self.year = year
         self.dpi = 120
@@ -187,8 +187,12 @@ class EVLoadModel(object):
         self.weekend_nodelay = pd.read_csv('load_results/chg1_dow2_flex1.csv', header = None, names = ['home1','home2','work1','work2','public2','publicdcfc'])
         self.weekend_maxdelay = pd.read_csv('load_results/chg1_dow2_flex2.csv', header = None, names = ['home1','home2','work1','work2','public2','publicdcfc'])
         self.weekend_minpower = pd.read_csv('load_results/chg1_dow2_flex3.csv', header = None, names = ['home1','home2','work1','work2','public2','publicdcfc'])
-
-    def stackplotter(self, pct_nodelay, pct_maxdelay, pct_minpower, pct_shift, pct_tou, dayofweek, num_evs):
+        
+        #wind assemblage
+        self.winddf = pd.read_csv('COwind8760.csv')
+        
+        
+    def stackplotter(self, pct_nodelay, pct_maxdelay, pct_minpower, pct_shift, pct_tou, dayofweek, num_evs, title = None):
 
         if dayofweek == 'Proportional Blend':
             pct_weekday = 0.7
@@ -367,8 +371,11 @@ class EVLoadModel(object):
         else:
             axstack.axvline(x = self.xintersections[0], ls = '--', color = sns.color_palette()[8], label = 'λ Crosses Mean')
             axstack.axvline(x = self.xintersections[-1], ls = '--', color = sns.color_palette()[8])
-        axstack.legend(labels = ['System Load','Home L1','Home L2','Work L1','Work L2','Public L2','DCFC','λ Crosses Mean'])
-        axstack.set_title('Average System Load with Modeled EV Contribution', fontsize = self.titlesize)
+        axstack.legend(labels = ['System Load','Home L1','Home L2','Work L1','Work L2','Public L2','DCFC','λ Crosses Mean'], fontsize = 8).draggable()
+        if title == None:
+            axstack.set_title('Average System Load with Modeled EV Contribution', fontsize = self.titlesize)
+        else:
+            axstack.set_title(title, fontsize = self.titlesize)
         axstack.set_xlabel('Hour of The Day')
         axstack.set_ylabel('Load (kW)')
         plt.xticks(np.arange(0,25,2))
@@ -379,7 +386,7 @@ class EVLoadModel(object):
         figlambda, axlambda = plt.subplots(figsize = self.figsize, dpi = self.dpi)
         sns.set_style('white')
         sns.despine()
-        sns.lineplot('Hour','value', data = self.sldfout, ax = axlambda, label = 'Average System λ')
+        sl = sns.lineplot('Hour','value', data = self.sldfout, ax = axlambda, label = 'Average System λ')
         hours = range(0,24)
         ts_mean = []
         ts_std = []
@@ -424,20 +431,30 @@ class EVLoadModel(object):
             goabovetime = xintersectiontimes[0]
             gobelowtime = 'N/A'
             delta = decimaltotime(str(24 - xintersections[0]).split('.'))
-            plt.axvline(x = xintersections[0], ls = '--', color = sns.color_palette()[8], label = 'λ Crosses Mean')
+            vl = plt.axvline(x = xintersections[0], ls = '--', color = sns.color_palette()[8], label = 'λ Crosses Mean')
         else:
             goabovetime = xintersectiontimes[0]
             gobelowtime = xintersectiontimes[-1]
             delta = decimaltotime(str(24 - (xintersections[-1] - xintersections[0])).split('.'))
-            plt.axvline(x = xintersections[0], ls = '--', color = sns.color_palette()[8], label = 'λ Crosses Mean')
+            vl = plt.axvline(x = xintersections[0], ls = '--', color = sns.color_palette()[8], label = 'λ Crosses Mean')
             plt.axvline(x = xintersections[-1], ls = '--', color = sns.color_palette()[8])
     
-        axlambda.axhline(mean, ls = '--', color = sns.color_palette()[1], label = 'λ Mean')
-        axlambda.legend()
+        hl = axlambda.axhline(mean, ls = '--', color = sns.color_palette()[1], label = 'λ Mean')
+        
+        axlambdawind = plt.twinx()
+        wd = sns.lineplot('Hour','avg', data = self.winddf, ax = axlambdawind, color = sns.color_palette()[3])
+        
+        axlambdawind.set_ylabel('')
+        axlambdawind.set_yticklabels([])
+        
+        lns = [sl.lines[0], hl, vl, wd.lines[0]]
+        labels = [l.get_label() for l in lns[0:3]]
+        labels.append('Modeled Wind Output')
+        axlambda.legend(lns, labels, loc = 'upper center', fontsize = 8)
         axlambda.set_title('PSCo System Lambda by Hour (Confidence Band = Standard Dev.)', fontsize = self.titlesize)
         axlambda.set_xlabel('Hour of The Day')
         axlambda.set_ylabel('$/MWh')
-        plt.xticks(np.arange(0,25,2))
+        plt.xticks(np.arange(0,24,2))
 
         
         s = f"""
@@ -449,7 +466,7 @@ Lambda Went Above Mean: {goabovetime}
 Lambda Went Below Mean: {gobelowtime}
 Time Spent Below Mean: {delta}
 """
-        axlambda.text(x = 0.65, y = 0.12, s = s, size = 8, transform=figlambda.transFigure)
+        axlambda.text(x = 0.7, y = 0.12, s = s, size = 7, transform=figlambda.transFigure)
         return self
         
     def programloadplotter(self):
@@ -473,7 +490,7 @@ Time Spent Below Mean: {delta}
             axprogram.axvline(x = self.xintersections[0], ls = '--', color = sns.color_palette()[8], label = 'λ Crosses Mean')
             axprogram.axvline(x = self.xintersections[-1], ls = '--', color = sns.color_palette()[8])
             
-        axprogram.legend(labels = ['No Delay','Max Delay','Min Power','Shiftable','Time Of Use', 'λ Crosses Mean'])
+        axprogram.legend(labels = ['No Delay','Max Delay','Min Power','Shiftable','Time Of Use', 'λ Crosses Mean'], fontsize = 8)
         axprogram.set_title('EV Load by Charging Program', fontsize = self.titlesize)
         axprogram.set_xlabel('Hour of The Day')
         axprogram.set_ylabel('Load (kW)')
@@ -484,7 +501,7 @@ Time Spent Below Mean: {delta}
         figcontribution, axcontribution = plt.subplots(figsize = self.figsize, dpi = self.dpi)
         sns.despine()
         self.dfscenario['load_contribution'] = self.dfscenario['load_contribution'] * 100
-        self.dfscenario['load_contribution'].plot(ax = axcontribution, color = sns.color_palette()[0])
+        self.dfscenario['load_contribution'].plot(ax = axcontribution, color = sns.color_palette()[0], label = 'Contribution to Load')
     
         if len(self.xintersections) == 0:
             print('no mean intersection')
@@ -493,7 +510,7 @@ Time Spent Below Mean: {delta}
         else:
             axcontribution.axvline(x = self.xintersections[0], ls = '--', color = sns.color_palette()[8], label = 'λ Crosses Mean')
             axcontribution.axvline(x = self.xintersections[-1], ls = '--', color = sns.color_palette()[8])
-        axcontribution.legend()
+        axcontribution.legend(fontsize = 8)
         axcontribution.set_title('EV Contribution to System Load', fontsize = self.titlesize)
         axcontribution.set_xlabel('Hour of The Day')
         axcontribution.set_ylabel('Percent')
@@ -513,7 +530,7 @@ Time Spent Below Mean: {delta}
         else:
             axloadonly.axvline(x = self.xintersections[0], ls = '--', color = sns.color_palette()[8], label = 'λ Crosses Mean')
             axloadonly.axvline(x = self.xintersections[-1], ls = '--', color = sns.color_palette()[8])
-        axloadonly.legend(labels = ['Home L1','Home L2','Work L1','Work L2','Public L2','DCFC','λ Crosses Mean'])
+        axloadonly.legend(labels = ['Home L1','Home L2','Work L1','Work L2','Public L2','DCFC','λ Crosses Mean'], fontsize = 8)
         axloadonly.set_title('EV Load by Hour', fontsize = self.titlesize)
         axloadonly.set_xlabel('Hour of The Day')
         axloadonly.set_ylabel('Load (kW)')
@@ -537,3 +554,7 @@ Time Spent Below Mean: {delta}
         self.programloadplotter()
         self.loadcontributionplotter()
         self.lambdaplotter()
+        
+clf = EVLoadModel(2017)
+clf.stackplotter(pct_nodelay = 0.2, pct_maxdelay = 0.2, pct_minpower = 0.2, pct_shift = 0.2, pct_tou = 0.2, dayofweek = 'Proportional Blend', num_evs = 'med')
+clf.lambdaplotter()
