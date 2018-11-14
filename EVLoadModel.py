@@ -5,12 +5,14 @@ Created on Wed Oct 24 12:44:22 2018
 
 @author: skoebric
 """
-
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
 import datetime
+from IPython import get_ipython
+get_ipython().run_line_magic('matplotlib', 'inline')
+
 
 def _rect_inter_inner(x1,x2):
     n1=x1.shape[0]-1
@@ -192,8 +194,9 @@ class EVLoadModel(object):
         self.winddf = pd.read_csv('COwind8760.csv')
         
         
-    def stackplotter(self, pct_nodelay, pct_maxdelay, pct_minpower, pct_shift, pct_tou, dayofweek, num_evs, title = None):
-
+    def stackplotter(self, num_evs = 'mid', pct_nodelay = .8, pct_tou = .2, pct_shift = 0,
+                     pct_maxdelay = 0, pct_minpower = 0, dayofweek = 'Proportional Blend', title = None):
+        
         if dayofweek == 'Proportional Blend':
             pct_weekday = 0.7
             pct_weekend = 0.3
@@ -203,6 +206,9 @@ class EVLoadModel(object):
         elif dayofweek == 'Weekdays Only':
             pct_weekday = 1
             pct_weekend = 0
+        else:
+            pct_weekday = 0.7
+            pct_weekend = 0.3
             
         if num_evs == 'current':
             num_evs = 7000
@@ -491,7 +497,7 @@ Time Spent Below Mean: {delta}
             axprogram.axvline(x = self.xintersections[-1], ls = '--', color = sns.color_palette()[8])
             
         axprogram.legend(labels = ['No Delay','Max Delay','Min Power','Shiftable','Time Of Use', 'λ Crosses Mean'], fontsize = 8)
-        axprogram.set_title('EV Load by Charging Program', fontsize = self.titlesize)
+        axprogram.set_title('EV Load by Charging Behavior', fontsize = self.titlesize)
         axprogram.set_xlabel('Hour of The Day')
         axprogram.set_ylabel('Load (kW)')
         plt.xticks(np.arange(0,25,2))
@@ -535,26 +541,23 @@ Time Spent Below Mean: {delta}
         axloadonly.set_xlabel('Hour of The Day')
         axloadonly.set_ylabel('Load (kW)')
         plt.xticks(np.arange(0,25,2))
+        plt.show()
 
     
     def plotall(self, pct_nodelay, pct_maxdelay, pct_minpower, pct_shift, pct_tou, dayofweek, num_evs):
-        pct_nodelay = pct_nodelay / 100
-        pct_maxdelay = pct_maxdelay / 100
-        pct_minpower = pct_minpower / 100
-        pct_shift = pct_shift / 100
-        pct_tou = pct_tou / 100
-                                        
-        pct_sum = round(pct_nodelay + pct_maxdelay + pct_minpower + pct_shift + pct_tou,2)
+#        pct_nodelay = pct_nodelay / 100
+#        pct_maxdelay = pct_maxdelay / 100
+#        pct_minpower = pct_minpower / 100
+#        pct_shift = pct_shift / 100
+#        pct_tou = pct_tou /100
+                                
+        pct_sum = pct_nodelay + pct_maxdelay + pct_minpower + pct_shift + pct_tou
         if pct_sum != 1:
-            print(f'Percentages must equal 100% (currenty equals {pct_sum * 100}%)')
+            print(f'Percentages must equal 100% (currenty equals {str(pct_sum * 100)[0:3]}%)')
             return
             
-        self.stackplotter(pct_nodelay, pct_maxdelay, pct_minpower, pct_shift, pct_tou, dayofweek, num_evs)
+        self.stackplotter(num_evs, pct_nodelay, pct_tou, pct_shift, pct_maxdelay, pct_minpower, dayofweek)
         self.evloadonlyplotter()
         self.programloadplotter()
         self.loadcontributionplotter()
         self.lambdaplotter()
-        
-clf = EVLoadModel(2017)
-clf.stackplotter(pct_nodelay = 0.2, pct_maxdelay = 0.2, pct_minpower = 0.2, pct_shift = 0.2, pct_tou = 0.2, dayofweek = 'Proportional Blend', num_evs = 'med')
-clf.lambdaplotter()

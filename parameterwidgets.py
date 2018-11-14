@@ -16,70 +16,79 @@ display(HTML("<style>.container { width:85% !important; }</style>"))
 display(HTML("<style>.output_wrapper, .output {height:auto !important; max-height:5000px;}.output_scroll {box-shadow:none !important; webkit-box-shadow:none !important;}</style>"))
 
 style = {'description_width': 'initial'}
-    
-pctnodelayslider = widgets.IntSlider(
-                    value = 20,
+   
+numevswidget = widgets.Text(
+                    value='300000',
+                    description='Number of EVs:',
+                    disabled=False,
+                    style = style)
+ 
+
+pctnodelayslider = widgets.FloatSlider(
+                    value = .8,
                     min=0,
-                    max=100,
-                    step = 5,
+                    max=1,
+                    step = .05,
                     description = 'Percent No Delay:',
                     disabled = False,
                     continuous_update = False,
                     orientation = 'horizontal',
                     readout = True,
-                    readout_format = 'd',
+                    readout_format = '.0%',
                     style = style)
 
-pctmaxdelayslider = widgets.IntSlider(
-                    value = 20,
+pcttouslider = widgets.FloatSlider(
+                    value = .2,
                     min=0,
-                    max = 100,
-                    step = 5,
-                    description = 'Percent Max Delay:',
-                    disabled = False,
-                    continuous_update = False,
-                    orientation = 'horizontal',
-                    readout = True,
-                    readout_format = 'd',
-                    style = style)
-
-pctminpowerslider = widgets.IntSlider(
-                    value = 20,
-                    min=0,
-                    max=100,
-                    step = 5,
-                    description = 'Percent Min Power:',
-                    disabled = False,
-                    continuous_update = False,
-                    orientation = 'horizontal',
-                    readout = True,
-                    readout_format = 'd',
-                    style = style)
-
-pctshiftslider = widgets.IntSlider(
-                    value = 20,
-                    min=0,
-                    max=100,
-                    step = 5,
-                    description = 'Percent Shiftable:',
-                    disabled = False,
-                    continuous_update = False,
-                    orientation = 'horizontal',
-                    readout = True,
-                    readout_format = 'd',
-                    style = style)
-
-pcttouslider = widgets.IntSlider(
-                    value = 20,
-                    min=0,
-                    max=100,
-                    step = 5,
+                    max=1,
+                    step = .05,
                     description = 'Percent Time of Use:',
                     disabled = False,
                     continuous_update = False,
                     orientation = 'horizontal',
                     readout = True,
-                    readout_format = 'd',
+                    readout_format = '.0%',
+                    style = style)
+
+
+
+pctshiftslider = widgets.FloatSlider(
+                    value = 0,
+                    min=0,
+                    max=1,
+                    step = .05,
+                    description = 'Percent Shiftable:',
+                    disabled = False,
+                    continuous_update = False,
+                    orientation = 'horizontal',
+                    readout = True,
+                    readout_format = '.0%',
+                    style = style)
+
+pctmaxdelayslider = widgets.FloatSlider(
+                    value = 0,
+                    min=0,
+                    max = 1,
+                    step = .05,
+                    description = 'Percent Max Delay:',
+                    disabled = False,
+                    continuous_update = False,
+                    orientation = 'horizontal',
+                    readout = True,
+                    readout_format = '.0%',
+                    style = style)
+
+pctminpowerslider = widgets.FloatSlider(
+                    value = 0,
+                    min=0,
+                    max=1,
+                    step = .05,
+                    description = 'Percent Min Power:',
+                    disabled = False,
+                    continuous_update = False,
+                    orientation = 'horizontal',
+                    readout = True,
+                    readout_format = '.0%',
                     style = style)
 
 #yearwidget = widgets.BoundedIntText(
@@ -91,28 +100,30 @@ pcttouslider = widgets.IntSlider(
 #                disabled=False,
 #                style = style)
 
-numevswidget = widgets.Text(
-                    value='med',
-                    description='Number of EVs:',
-                    disabled=False,
-                    style = style)
 
-daywidget = widgets.ToggleButtons(
+daywidget = widgets.Dropdown(
         options = ['Proportional Blend', 'Weekdays Only', 'Weekends Only'],
         description = 'Day of Week:',
+        value = 'Proportional Blend',
         disabled = False,
-        button_style = '',
         style = style)
 
 def showbasicwidgets():
-    global pctnodelayslider, pctmaxdelayslider, pctminpowerslider, pctshiftslider, pcttouslider, numevswidget
     c = EVLoadModel.EVLoadModel(2017)
-    widgets.interact_manual(c.plotall, pct_nodelay = pctnodelayslider,
-                               pct_maxdelay = pctmaxdelayslider,
-                               pct_minpower = pctminpowerslider,
-                               pct_shift = pctshiftslider,
-                               pct_tou = pcttouslider,
-                               dayofweek = daywidget,
-                               num_evs = numevswidget)
+    sliderbox1 = widgets.HBox([pctnodelayslider,pcttouslider])
+    sliderbox2 = widgets.HBox([pctshiftslider,pctmaxdelayslider])
+    sliderbox3 = widgets.HBox([pctminpowerslider])
+    vbox = widgets.VBox([numevswidget,sliderbox1,sliderbox2,sliderbox3,daywidget])
+    
+    widgetout = widgets.interactive_output(c.plotall,{'num_evs':numevswidget,
+                                                      'pct_nodelay':pctnodelayslider,
+                                                      'pct_tou':pcttouslider,
+                                                      'pct_shift':pctshiftslider,
+                                                      'pct_maxdelay':pctmaxdelayslider,
+                                                      'pct_minpower':pctminpowerslider,
+                                                      'dayofweek':daywidget})
+    display(vbox, widgetout)
+    
+
     
 showbasicwidgets()
