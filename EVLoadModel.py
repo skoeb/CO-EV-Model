@@ -543,6 +543,25 @@ Time Spent Below Mean: {delta}
         plt.xticks(np.arange(0,25,2))
         plt.show()
 
+#       Adding a solar/renewable only plotter
+    def variable_renewable_plot(self):
+        sns.set_style('white')
+        figvar, axvar = plt.subplots(figsize = self.figsize, dpi = self.dpi)
+        sns.despine()
+
+        #wind assemblage
+        self.wind_data = pd.read_csv('COwind8760.csv')
+
+        data1 = sns.lineplot('Hour','avg', data = self.wind_data, ax = axvar, label = 'Placeholder Wind Data')
+        hours = range(0,24)
+
+        axvar.legend(fontsize = 8)
+        axvar.set_title('Renewable Load Data in Minnesota', fontsize = self.titlesize)
+        axvar.set_xlabel('Hour of the Day')
+        axvar.set_ylabel('Blank')
+        plt.xticks(np.arange(0,25,2))
+        
+
     
     def plotall(self, pct_nodelay, pct_maxdelay, pct_minpower, pct_shift, pct_tou, dayofweek, num_evs):
 #        pct_nodelay = pct_nodelay / 100
@@ -561,3 +580,5 @@ Time Spent Below Mean: {delta}
         self.programloadplotter()
         self.loadcontributionplotter()
         self.lambdaplotter()
+        self.variable_renewable_plot()
+        

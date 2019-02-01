@@ -125,7 +125,6 @@ def showbasicwidgets():
                                                       'pct_minpower':pctminpowerslider,
                                                       'dayofweek':daywidget})
     display(vbox, widgetout)
-    
 
     
 showbasicwidgets()
