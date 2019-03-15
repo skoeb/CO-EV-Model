@@ -10,8 +10,21 @@ import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
 import datetime
-#from IPython import get_ipython
-#get_ipython().run_line_magic('matplotlib', 'inline')
+import matplotlib.ticker as mtick
+
+def in_ipynb():
+    try:
+        cfg = get_ipython().config
+        if cfg['IPKernelApp']['parent_appname'] == 'ipython-notebook':
+            return True
+        else:
+            return False
+    except NameError:
+        return False
+
+if in_ipynb():
+    from IPython import get_ipython
+    get_ipython().run_line_magic('matplotlib', 'inline')
 
 
 def _rect_inter_inner(x1,x2):
@@ -557,7 +570,7 @@ Time Spent Below Mean: {delta}
         else:
             axlocation.axvline(x = self.xintersections[0], ls = '--', color = sns.color_palette()[8], label = 'λ Crosses Mean')
             axlocation.axvline(x = self.xintersections[-1], ls = '--', color = sns.color_palette()[8])
-        axlocation.legend(labels = ['Home L1','Home L2','Work L1','Work L2','Public L2','DCFC','λ Crosses Mean'], fontsize = 8)
+        axlocation.legend(labels = ['Home L1','Home L2','Work L1','Work L2','Public L2','DCFC','λ Crosses Mean'], fontsize = 8).set_draggable(True)
         axlocation.set_xlabel('Hour of The Day')
         axlocation.set_ylabel('EV Charging by Location')
         plt.xticks(np.arange(0,25,2))
