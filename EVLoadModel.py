@@ -561,6 +561,7 @@ Time Spent Below Mean: {delta}
         figlocation, axlocation = plt.subplots(figsize = self.figsize, dpi = self.dpi)
         dfperc = self.dfscenario.drop(['system_load','system_lambda','ev_load','total_load','load_contribution'], axis = 1)
         dfperc = dfperc.divide(dfperc.sum(axis=1), axis = 0)
+
         dfperc.plot.area(color = sns.color_palette()[1:], ax = axlocation, legend = False)
 
         if len(self.xintersections) == 0:
@@ -570,11 +571,18 @@ Time Spent Below Mean: {delta}
         else:
             axlocation.axvline(x = self.xintersections[0], ls = '--', color = sns.color_palette()[8], label = 'λ Crosses Mean')
             axlocation.axvline(x = self.xintersections[-1], ls = '--', color = sns.color_palette()[8])
+
+        fmt = '{x:.0%}'
+        tick = mtick.StrMethodFormatter(fmt)
+        axlocation.yaxis.set_major_formatter(tick)
+
         axlocation.legend(labels = ['Home L1','Home L2','Work L1','Work L2','Public L2','DCFC','λ Crosses Mean'], fontsize = 8).set_draggable(True)
         axlocation.set_xlabel('Hour of The Day')
         axlocation.set_ylabel('EV Charging by Location')
         plt.xticks(np.arange(0,25,2))
+        plt.show()
 
+        self.dfperc = dfperc
 
     def plotall(self, pct_nodelay, pct_maxdelay, pct_minpower, pct_shift, pct_tou, dayofweek, num_evs):
 #        pct_nodelay = pct_nodelay / 100
